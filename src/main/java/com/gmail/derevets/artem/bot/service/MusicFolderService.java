@@ -3,6 +3,7 @@ package com.gmail.derevets.artem.bot.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 
@@ -13,12 +14,12 @@ import java.util.List;
 @Service
 public class MusicFolderService {
 
+    @Value("${bot.path}")
+    private String path;
 
-    private final Path myDir = Paths.get("C:\\Users\\Artem\\Downloads\\VK audio");
+    private final Path myDir = Paths.get(path);
 
     private Logger logger = LoggerFactory.getLogger(MusicFolderService.class);
-
-    private List<File> listAudio;
 
     private String fileName;
 
@@ -51,7 +52,7 @@ public class MusicFolderService {
                     InputFile inputFile = new InputFile(new File(myDir + "\\" + fileName), fileName);
                     fileName = inputFile.getMediaName();
                     if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
-                        if(fileName.substring(fileName.lastIndexOf(".")+1).equals("mp3")) {
+                        if (fileName.substring(fileName.lastIndexOf(".") + 1).equals("mp3")) {
                             logger.info("Start upload" + inputFile.getMediaName());
                             musicMessageSenderService.sendAudio(inputFile);
                         }
@@ -60,9 +61,7 @@ public class MusicFolderService {
             }
 
         } catch (Exception e) {
-            e.printStackTrace();
-               /* logger.error("Error: " + e.getMessage());
-                logger.error(e.getStackTrace().toString());*/
+            logger.error("Error: " + e.getMessage());
         }
     }
 }

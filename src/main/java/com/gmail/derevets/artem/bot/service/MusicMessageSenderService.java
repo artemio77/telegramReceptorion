@@ -52,20 +52,13 @@ public class MusicMessageSenderService extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         if (update.hasMessage()) {
             String textMessage = update.getMessage().getText();
-            //String audio = update.getMessage().getAudio().getFileId();
-            // logger.info(audio);
             Long chatId = update.getMessage().getChatId();
             log.info("Chat ID " + chatId.toString() + "message " + textMessage);
-
-            /*SendAudio sendAudio = new SendAudio()
-                    .setChatId("@Music_by_RECEPTORION")
-                    .setAudio(audio);*/
             SendMessage message = new SendMessage()
                     .setChatId(chatId)
                     .setText(textMessage);
             try {
                 execute(message);
-                //  execute(sendAudio);
             } catch (TelegramApiException e) {
                 log.error(e.getMessage());
             }
