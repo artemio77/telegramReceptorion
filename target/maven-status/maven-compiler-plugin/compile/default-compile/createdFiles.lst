@@ -1,0 +1,5 @@
+com\gmail\derevets\artem\bot\service\MusicFolderService.class
+com\gmail\derevets\artem\DemoApplication.class
+com\gmail\derevets\artem\bot_vocabulary\Vocabulary.class
+com\gmail\derevets\artem\bot\config\TelegramSenderConfig.class
+com\gmail\derevets\artem\bot\service\MusicMessageSenderService.class
