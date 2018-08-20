@@ -4,7 +4,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.File;
 import java.nio.file.*;
@@ -18,8 +17,6 @@ public class MusicFolderService {
 
     private Logger logger = LoggerFactory.getLogger(MusicFolderService.class);
 
-    private List<File> listAudio;
-
     private String fileName;
 
     @Autowired
@@ -31,9 +28,7 @@ public class MusicFolderService {
             WatchService watcher = myDir.getFileSystem().newWatchService();
             myDir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
                     StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
-
             WatchKey watckKey = watcher.take();
-
             List<WatchEvent<?>> events = watckKey.pollEvents();
             for (WatchEvent event : events) {
                 if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
@@ -48,12 +43,12 @@ public class MusicFolderService {
                     fileName = event.context().toString();
                     logger.info(myDir + "\\" + fileName);
                     logger.info("File " + event.context().toString() + " added to Audio List");
-                    InputFile inputFile = new InputFile(new File(myDir + "\\" + fileName), fileName);
-                    fileName = inputFile.getMediaName();
+                    File file = new File((myDir + "\\" + fileName), fileName);
+                    fileName = file.getName();
                     if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
                         if (fileName.substring(fileName.lastIndexOf(".") + 1).equals("mp3")) {
-                            logger.info("Start upload" + inputFile.getMediaName());
-                            musicMessageSenderService.sendAudio(inputFile);
+                            logger.info("Start upload {}", file.getName());
+                            musicMessageSenderService.sendAudio(file);
                         }
                     }
                 }

@@ -2,6 +2,7 @@ package com.gmail.derevets.artem.bot.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import me.tongfei.progressbar.ProgressBar;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.util.Iterator;
 import java.util.List;
 
@@ -33,12 +36,10 @@ public class MusicMessageSenderService extends TelegramLongPollingBot {
     private String name;
 
 
-    public void sendAudio(InputFile file) {
-
-
+    public void sendAudio(File file) throws FileNotFoundException {
         SendAudio sendAudio = new SendAudio()
                 .setChatId("@Music_by_RECEPTORION")
-                .setAudio(file);
+                .setAudio(file.getName(),new FileInputStream(file));
         try {
             execute(sendAudio);
             log.info("File " + sendAudio.getAudio().getMediaName()
