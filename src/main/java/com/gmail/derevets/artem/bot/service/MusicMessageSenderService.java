@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 
 import org.telegram.telegrambots.meta.api.methods.send.SendAudio;
+import org.telegram.telegrambots.meta.api.methods.send.SendMediaGroup;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Audio;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
@@ -17,6 +18,8 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
@@ -40,22 +43,17 @@ public class MusicMessageSenderService extends TelegramLongPollingBot {
     public void sendAudio(InputFile file) throws InterruptedException {
 
         SendAudio sendAudio = new SendAudio()
-                .setChatId("@Music_by_RECEPTORION")
+                .setChatId("@music_by_rec")
                 .setAudio(file);
+
         Thread thread = new Thread(() -> {
             try {
                 execute(sendAudio);
-                new Timer().schedule(
-                        new TimerTask() {
-                            public void run() {
-                                if (Thread.currentThread().isAlive())
-                                    Thread.currentThread().interrupt();
-                                log.debug("Thread interrupted after 3 min");
-                            }
-                        }, THREAD_DELAY
-                );
+                if (Thread.currentThread().isAlive())
+                    Thread.currentThread().interrupt();
+                log.debug("Thread interrupted");
             } catch (TelegramApiException e) {
-                e.printStackTrace();
+                log.error(e.getMessage());
             }
 
         });
