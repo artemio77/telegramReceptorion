@@ -4,9 +4,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 
 import java.io.File;
 import java.nio.file.*;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 @Service
@@ -17,10 +20,13 @@ public class MusicFolderService {
 
     private Logger logger = LoggerFactory.getLogger(MusicFolderService.class);
 
+    private List<InputFile> listAudio = new ArrayList<>();
+
     private String fileName;
 
     @Autowired
     private MusicMessageSenderService musicMessageSenderService;
+
 
     public void monitoringChangesInFolder() {
 
@@ -28,27 +34,23 @@ public class MusicFolderService {
             WatchService watcher = myDir.getFileSystem().newWatchService();
             myDir.register(watcher, StandardWatchEventKinds.ENTRY_CREATE,
                     StandardWatchEventKinds.ENTRY_DELETE, StandardWatchEventKinds.ENTRY_MODIFY);
+
             WatchKey watckKey = watcher.take();
+
             List<WatchEvent<?>> events = watckKey.pollEvents();
             for (WatchEvent event : events) {
-                if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE) {
-                    logger.info("Created: " + event.context().toString());
-                }
-                if (event.kind() == StandardWatchEventKinds.ENTRY_DELETE) {
-                    logger.info("Delete: " + event.context().toString());
-                    logger.info(event.kind().name(), event.kind().type());
-                }
                 if (event.kind() == StandardWatchEventKinds.ENTRY_MODIFY) {
                     logger.info("Modify: " + event.context().toString());
                     fileName = event.context().toString();
                     logger.info(myDir + "\\" + fileName);
                     logger.info("File " + event.context().toString() + " added to Audio List");
-                    File file = new File((myDir + "\\" + fileName), fileName);
-                    fileName = file.getName();
+                    InputFile inputFile = new InputFile(new File(myDir + "\\" + fileName), fileName);
+                    fileName = inputFile.getMediaName();
+
                     if (fileName.lastIndexOf(".") != -1 && fileName.lastIndexOf(".") != 0) {
                         if (fileName.substring(fileName.lastIndexOf(".") + 1).equals("mp3")) {
-                            logger.info("Start upload {}", file.getName());
-                            musicMessageSenderService.sendAudio(file);
+                                    logger.info("Start upload, {}", inputFile.getMediaName());
+                                    musicMessageSenderService.sendAudio(inputFile);
                         }
                     }
                 }

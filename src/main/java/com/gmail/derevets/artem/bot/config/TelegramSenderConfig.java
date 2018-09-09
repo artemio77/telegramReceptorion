@@ -17,7 +17,10 @@ public class TelegramSenderConfig {
     @PostConstruct
     public void start() {
         for (; ; ) {
-            musicFolderService.monitoringChangesInFolder();
+
+                   musicFolderService.monitoringChangesInFolder();
+
         }
     }
 }
+
