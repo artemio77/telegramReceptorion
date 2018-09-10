@@ -2,6 +2,12 @@ package com.gmail.derevets.artem.bot.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.audio.exceptions.CannotReadException;
+import org.jaudiotagger.audio.exceptions.InvalidAudioFrameException;
+import org.jaudiotagger.audio.exceptions.ReadOnlyFileException;
+import org.jaudiotagger.tag.TagException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.stereotype.Component;
@@ -17,9 +23,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.annotation.PostConstruct;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Timer;
@@ -38,30 +42,31 @@ public class MusicMessageSenderService extends TelegramLongPollingBot {
     @Value("${bot.name}")
     private String name;
 
-    private Long THREAD_DELAY = 18000L;
 
-    public void sendAudio(InputFile file) throws InterruptedException {
-
+    public void sendAudio(File file) throws IOException, TagException, ReadOnlyFileException, CannotReadException, InvalidAudioFrameException {
+        AudioFile audioFile = AudioFileIO.read(file);
         SendAudio sendAudio = new SendAudio()
                 .setChatId("@music_by_rec")
-                .setAudio(file);
+                .setAudio(file)
+                .setTitle(file.getName())
+                .setCaption(file.getName())
+                .setDuration(audioFile.getAudioHeader().getTrackLength());
 
         Thread thread = new Thread(() -> {
             try {
                 execute(sendAudio);
-                if (Thread.currentThread().isAlive())
-                    Thread.currentThread().interrupt();
-                log.debug("Thread interrupted");
             } catch (TelegramApiException e) {
-                log.error(e.getMessage());
+                log.error(e.fillInStackTrace().getMessage());
             }
 
         });
         thread.start();
-
-
         log.info("File " + sendAudio.getAudio().getMediaName()
                 + " send in chat " + sendAudio.getChatId() + " successfull");
+        if (Thread.currentThread().isAlive()) {
+            Thread.currentThread().interrupt();
+            log.debug("Thread interrupted");
+        }
     }
 
 
