@@ -43,30 +43,28 @@ public class MusicMessageSenderService extends TelegramLongPollingBot {
     private String name;
 
 
-    public void sendAudio(File file) throws IOException, TagException, ReadOnlyFileException, CannotReadException, InvalidAudioFrameException {
+    public void sendAudio(File file) throws IOException, TagException, ReadOnlyFileException, CannotReadException, InvalidAudioFrameException, InterruptedException {
         AudioFile audioFile = AudioFileIO.read(file);
         SendAudio sendAudio = new SendAudio()
                 .setChatId("@music_by_rec")
                 .setAudio(file)
                 .setTitle(file.getName())
-                .setCaption(file.getName())
                 .setDuration(audioFile.getAudioHeader().getTrackLength());
 
         Thread thread = new Thread(() -> {
+
             try {
                 execute(sendAudio);
             } catch (TelegramApiException e) {
-                log.error(e.fillInStackTrace().getMessage());
+                log.error(e.getCause().toString());
             }
 
         });
+        thread.setDaemon(true);
         thread.start();
         log.info("File " + sendAudio.getAudio().getMediaName()
                 + " send in chat " + sendAudio.getChatId() + " successfull");
-        if (Thread.currentThread().isAlive()) {
-            Thread.currentThread().interrupt();
-            log.debug("Thread interrupted");
-        }
+
     }
 
 
